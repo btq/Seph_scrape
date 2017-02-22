@@ -302,6 +302,31 @@ print len(partylist)
 print datetime.now().date()
 
 
+# In[5]:
+
+filelist=['files/sephora_hair_search_2017-01-18.xlsx',
+'files/sephora_hair_search_2017-01-19.xlsx',
+'files/sephora_hair_search_2017-01-23.xlsx',
+'files/sephora_hair_search_2017-01-26.xlsx',
+'files/sephora_hair_search_2017-01-28.xlsx',
+'files/sephora_hair_search_2017-01-29.xlsx',
+'files/sephora_hair_search_2017-02-01.xlsx',
+'files/sephora_hair_search_2017-02-02.xlsx',
+'files/sephora_hair_search_2017-02-05.xlsx',
+'files/sephora_hair_search_2017-02-07.xlsx',
+'files/sephora_hair_search_2017-02-09.xlsx']
+all_df = pd.read_excel('files/sephora_hair_search_2017-01-14.xlsx')
+for f in filelist:
+    this_df=pd.read_excel(f)
+    all_df=all_df.append(this_df,ignore_index=True)
+print all_df.shape
+
+
+# In[6]:
+
+all_df.to_excel('files/sephora_hair_concat.xlsx',index=False)
+
+
 # In[ ]:
 
 

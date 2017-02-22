@@ -14717,6 +14717,61 @@ if(typeof(Sephora)===&#34;undefined&#34;) {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">filelist</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;files/sephora_hair_search_2017-01-18.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-01-19.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-01-23.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-01-26.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-01-28.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-01-29.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-02-01.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-02-02.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-02-05.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-02-07.xlsx&#39;</span><span class="p">,</span>
+<span class="s1">&#39;files/sephora_hair_search_2017-02-09.xlsx&#39;</span><span class="p">]</span>
+<span class="n">all_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">&#39;files/sephora_hair_search_2017-01-14.xlsx&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filelist</span><span class="p">:</span>
+    <span class="n">this_df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">all_df</span><span class="o">=</span><span class="n">all_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_df</span><span class="p">,</span><span class="n">ignore_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">all_df</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area"><div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(12416, 8)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython2"><pre><span></span><span class="n">all_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s1">&#39;files/sephora_hair_concat.xlsx&#39;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">

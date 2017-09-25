@@ -25,7 +25,11 @@ urlroot = 'http://www.sephora.com/search/search.jsp?keyword=hair&mode=all&node=1
 #todo: get page numbers from search results
 for p in np.arange(1,5):
     page_df = parse_sephora_results_page(urlroot,p)
-    time.sleep(np.random.randn()+2)
+    tsleep=np.random.randn()+2
+    if tsleep<0:
+        tsleep=tsleep*-1
+    print tsleep
+    time.sleep(tsleep)
     if p==1:
         page_df['rank']=page_df.index+1
         seph_df = page_df

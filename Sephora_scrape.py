@@ -20,7 +20,7 @@ get_ipython().magic(u'matplotlib inline')
 pd.options.display.max_columns=25
 
 
-# In[47]:
+# In[2]:
 
 import json
 import requests
@@ -325,6 +325,380 @@ print all_df.shape
 # In[6]:
 
 all_df.to_excel('files/sephora_hair_concat.xlsx',index=False)
+
+
+# In[2]:
+
+import json
+import requests
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from datetime import datetime
+from bs4 import BeautifulSoup
+
+urlroot = 'http://www.sephora.com/search/search.jsp?keyword=hair&mode=all&node=1050092&sortBy=P_BEST_SELLING%3A1%3A%3AP_RATING%3A1%3A%3AP_PROD_NAME%3A0%3A%3AP_DEFAULT_SKU%3A1&pageSize=-1'
+page=1
+url=urlroot
+print 'Parsing' + url
+response = requests.get(url)
+soup = BeautifulSoup(response.content,"lxml")
+data = soup.find('script',attrs={'id':"searchResult"}).get_text()
+jsondata = json.loads(data)
+    
+
+
+# In[14]:
+
+with open('jsondata.txt', 'w') as outfile:
+    json.dump(data, outfile)
+
+
+# In[7]:
+
+print jsondata.keys()
+
+
+# In[6]:
+
+print jsondata['products'].keys()
+
+
+# In[8]:
+
+print jsondata['meta'].keys()
+
+
+# In[ ]:
+
+
+df=pd.DataFrame(jsondata['products']['products'])
+df['date_scraped']=datetime.now()
+return df
+
+urlroot = 'http://www.sephora.com/search/search.jsp?keyword=hair&mode=all&node=1050092&sortBy=P_BEST_SELLING%3A1%3A%3AP_RATING%3A1%3A%3AP_PROD_NAME%3A0%3A%3AP_DEFAULT_SKU%3A1&pageSize=-1'
+page=1
+url=urlroot
+page_df = parse_sephora_results_page(urlroot,p)
+if p==1:
+    page_df['rank']=page_df.index+1
+    seph_df = page_df
+else:
+    page_df['rank']=page_df.index+seph_df.shape[0]+1
+    seph_df = pd.concat([seph_df,page_df])
+
+seph_df['pct_rank']=seph_df['rank'].div(seph_df.shape[0]).mul(100)
+#Reorder columns
+seph_df = seph_df[['date_scraped','rank','pct_rank','brand_name','display_name','rating','id','product_url']]
+
+filename_out = 'sephora_hair_search_' + str(datetime.now().date()) + '.xlsx'
+seph_df.to_excel(filename_out,index=False)
+filename_out2 = 'briogeo_sephora_hair_search_' + str(datetime.now().date()) + '.xlsx'
+seph_df[seph_df['brand_name']=='Briogeo'].to_excel(filename_out2,index=False)
+
+
+# In[2]:
+
+urlroot = 'http://www.sephora.com'
+page1='/rosarco-oil-P388629'
+page2='/blossom-bloom-ginseng-biotin-volumizing-shampoo-P402071'
+url = urlroot + str(page1)
+print 'Parsing' + url
+response = requests.get(url)
+soup = BeautifulSoup(response.content,"lxml")
+
+
+# In[4]:
+
+print soup.find('b',attrs={'class','u-textWarning'})
+
+
+# In[9]:
+
+print soup.find('script')
+
+
+# In[10]:
+
+soup.find_all('script')
+
+
+# In[5]:
+
+urlroot = 'http://www.sephora.com'
+page1='/rosarco-oil-P388629'
+page2='/blossom-bloom-ginseng-biotin-volumizing-shampoo-P402071'
+url2 = urlroot + str(page2)
+print 'Parsing ' + url2
+response2 = requests.get(url2)
+soup2 = BeautifulSoup(response.content,"lxml")
+
+
+# In[6]:
+
+print soup.find('b',attrs={'class','u-textWarning'})
+
+
+# In[ ]:
+
+data = soup.find('script',attrs={'id':"searchResult"}).get_text()
+jsondata = json.loads(data)
+df=pd.DataFrame(jsondata['products']['products'])
+
+
+# In[3]:
+
+oos_item='https://www.sephora.com/product/dont-despair-repair-deep-conditioning-mask-P388628?skuId=1784636'
+is_item='https://www.sephora.com/product/dont-despair-repair-deep-conditioning-mask-P388628?skuId=1823418'
+resp_oos=requests.get(oos_item)
+resp_is=requests.get(is_item)
+
+
+# In[13]:
+
+import re
+print re.search('Stock',resp_oos.content)
+print re.search('Stock',resp_is.content)
+
+
+# In[15]:
+
+with open("oos.txt", "w") as text_file:
+    text_file.write("{}".format(resp_oos.content))
+    
+with open("is.txt", "w") as text_file:
+    text_file.write("{}".format(resp_is.content))
+
+
+# In[16]:
+
+soup = BeautifulSoup(resp_oos.content,"lxml")
+data = soup.find_all('button')
+    
+
+
+# In[17]:
+
+print soup.find('script',attrs={'id':"searchResult"}).get_text()
+
+
+# In[34]:
+
+for link in soup.find_all('script'):
+    if "Sephora.Util.InflatorComps.queue('RegularProductTop'," in link.get_text():
+        #print link.get_text()[55:-16]
+        json_string=link.get_text()[55:-16].replace('\\"','"').replace("\\'","'").replace('\\"','"')
+        print json_string
+        jsondata = json.loads(json_string)
+        #print jsondata
+        #df=pd.DataFrame(jsondata['products']['products'])
+
+
+# In[33]:
+
+print json_string[15690:15700]
+
+
+# In[48]:
+
+print jsondata.keys()
+
+
+# In[38]:
+
+print len(jsondata['currentProduct'])
+print jsondata['currentProduct'].keys()
+
+
+# In[49]:
+
+print jsondata['currentProduct']['imageAltText']
+
+
+# In[42]:
+
+print len(jsondata['currentProduct']['regularChildSkus'])
+
+
+# In[46]:
+
+print jsondata['currentProduct']['regularChildSkus'][0]
+
+
+# In[45]:
+
+print jsondata['currentProduct']['regularChildSkus'][0]['isOutOfStock']
+
+
+# In[47]:
+
+for sku in jsondata['currentProduct']['regularChildSkus']:
+    print sku['targetUrl'], sku['skuName'], sku['isOutOfStock']
+    if sku['isOutOfStock']:
+        with open("oos_alert_email.txt", "w") as text_file:
+            text_file.write("{0}".format())
+
+
+# In[80]:
+
+urlroot='http://sephora.com'
+prod_urls=['/product/dont-despair-repair-deep-conditioning-mask-P388628',
+'/product/scalp-revival-charcoal-coconut-oil-micro-exfoliating-shampoo-P418507',
+'/product/rosarco-milk-reparative-leave-in-conditioning-spray-P396733',
+'/product/scalp-revival-charcoal-tea-tree-scalp-treatment-P418506',
+'/product/rosarco-blow-dry-perfection-heat-protectant-creme-P411359',
+'/product/blossom-bloom-ginseng-biotin-volumizing-conditioner-P388625',
+'/product/blossom-bloom-ginseng-biotin-volumizing-shampoo-P402071',
+'/product/scalp-revival-charcoal-biotin-dry-shampoo-P418505',
+'/product/be-gentle-be-kind-avocado-quinoa-co-wash-P388623',
+'/product/curl-charisma-rice-amino-avocado-leave-in-defining-creme-P388626',
+'/product/rosarco-repair-conditioner-P402073',
+'/product/be-gentle-be-kind-green-tea-clarifying-shampoo-P388624',
+'/product/curl-charisma-definition-on-the-go-travel-kit-P422368',
+'/product/rosarco-repair-shampoo-P402072',
+'/product/rosarco-repair-on-the-go-travel-kit-P422369',
+'/product/curl-charisma-rice-amino-quinoa-frizz-control-gel-P408411',
+'/product/curl-charisma-rice-amino-shampoo-P402074',
+'/product/curl-charisma-rice-amino-shea-curl-defining-conditioner-P388627',
+'/product/blossom-bloom-volumizing-on-the-go-travel-kit-P422370',
+'/product/rosarco-oil-P388629',
+'/product/don-t-despair-repair-gel-to-oil-overnight-repair-treatment-P408248',
+'/product/blossom-bloom-ginseng-biotin-volumizing-spray-P396734',
+'/product/ultimate-hair-goals-best-briogeo-kit-P425022',
+'/product/rosarco-repair-winter-hair-renewal-P425021']
+oos_flag=False
+email_filename = 'oos_email_' + str(datetime.now().date()) + '.txt'
+import os.path
+
+if ~os.path.isfile(email_filename):
+
+    text_file = open(email_filename, "w")
+
+    for p in prod_urls:
+        print p
+        resp=requests.get(urlroot+p)
+        soup = BeautifulSoup(resp.content,"lxml")
+        for link in soup.find_all('script'):
+            if "Sephora.Util.InflatorComps.queue('RegularProductTop'," in link.get_text():
+                #print link.get_text()[55:-16]
+                json_string=link.get_text()[55:-16].replace('\\"','"').replace("\\'","'").replace('\\"','"')
+                #print json_string
+                jsondata = json.loads(json_string)
+                if 'regularChildSkus' in jsondata['currentProduct'].keys():
+                    field='regularChildSkus'
+                    for sku in jsondata['currentProduct'][field]:
+                        print sku['targetUrl'], sku['skuName'], sku['isOutOfStock']
+                        if sku['isOutOfStock']:
+                            oos_flag=True
+                            text_file.write("\nOOS: {0} {1} {2}\n".format(urlroot+sku['targetUrl'], sku['skuName'], sku['isOutOfStock']))
+                else:
+                    field='currentSku'
+                    sku=jsondata['currentProduct'][field]
+                    print sku['targetUrl'], sku['isOutOfStock']
+                    if sku['isOutOfStock']:
+                        oos_flag=True
+                        text_file.write("\nOOS: {0} {1}\n".format(urlroot+sku['targetUrl'], sku['isOutOfStock']))
+
+
+    text_file.close()                
+    if oos_flag:
+        email_nancy(email_filename)
+
+
+# In[78]:
+
+#print jsondata['currentProduct'][field]
+#print jsondata['currentProduct'].keys()
+#print jsondata['currentProduct']['currentSku']
+with open("curltravel.txt", "w") as text_file:
+    text_file.write("{}".format(resp.content))
+
+
+# In[58]:
+
+print "OOS: {0} {1} {2}".format(urlroot+sku['targetUrl'], sku['skuName'], sku['isOutOfStock'])
+text_file = open(email_filename, "w")
+text_file.write("\nOOS: {0} {1} {2}\n".format(urlroot+sku['targetUrl'], sku['skuName'], sku['isOutOfStock']))
+text_file.close()
+
+
+# In[90]:
+
+import smtplib
+
+# Import the email modules we'll need
+from email.mime.text import MIMEText
+
+def email_nancy(text_file):
+    # Open a plain text file for reading.  For this example, assume that
+    # the text file contains only ASCII characters.
+    fp = open(text_file, 'rb')
+    # Create a text/plain message
+    msg = MIMEText(fp.read())
+    fp.close()
+
+    me = 'btquinn@gmail.com'
+    you ='orders@briogeohair.com'
+    msg['Subject'] = 'SEPHORA OUT OF STOCK ALERT'
+    msg['From'] = me
+    msg['To'] = you
+
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    #Next, log in to the server
+    server.login("btquinn", "ilC.20090521")
+
+    server.sendmail(me, you, msg.as_string())
+    server.quit()
+
+
+# In[91]:
+
+email_nancy(email_filename)
+
+
+# In[82]:
+
+import smtplib
+server = smtplib.SMTP('smtp.gmail.com', 587)
+
+#Next, log in to the server
+server.login("btquinn", "ilC.20090521")
+
+#Send the mail
+msg = '''
+Hello!''' # The /n separates the message from the headers
+server.sendmail("btquinn@gmail.com", "nancy@briogeohair.com", msg)
+
+
+# In[83]:
+
+server.ehlo()
+server.starttls()
+server.ehlo()
+
+
+# In[85]:
+
+server.login("btquinn", "ilC.20090521")
+
+
+# In[86]:
+
+msg = '''
+Hello!''' # The /n separates the message from the headers
+server.sendmail("btquinn@gmail.com", "nancy@briogeohair.com", msg)
+
+
+# In[99]:
+
+import os
+if not os.path.isfile(email_filename):
+    print 'no file'
 
 
 # In[ ]:

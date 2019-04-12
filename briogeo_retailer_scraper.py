@@ -736,6 +736,6 @@ if __name__ == '__main__':
   scraper.parse_all_products()
   scraper.compose_oos_email(send_to='orders@briogeohair.com,sales@briogeohair.com')
   scraper.quit()
-
+  exit()
 
 

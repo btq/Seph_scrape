@@ -13,7 +13,7 @@ def parse_sephora_results_page(urlbase,page):
     else:
         url = urlbase + '&currentPage=' + str(page)
     print 'Parsing ' + url
-    response = requests.get(url)
+    response = requests.get(url,verify=False)
     soup = BeautifulSoup(response.content,"lxml")
     data = soup.find('script',attrs={'id':"searchResult"}).get_text()
     jsondata = json.loads(data)
@@ -21,7 +21,8 @@ def parse_sephora_results_page(urlbase,page):
     df['date_scraped']=datetime.now()
     return df
 
-urlroot = 'http://www.sephora.com/search/search.jsp?keyword=hair&mode=all&node=1050092&sortBy=P_BEST_SELLING%3A1%3A%3AP_RATING%3A1%3A%3AP_PROD_NAME%3A0%3A%3AP_DEFAULT_SKU%3A1&pageSize=-1'
+#urlroot = 'http://www.sephora.com/search/search.jsp?keyword=hair&mode=all&node=1050092&sortBy=P_BEST_SELLING%3A1%3A%3AP_RATING%3A1%3A%3AP_PROD_NAME%3A0%3A%3AP_DEFAULT_SKU%3A1&pageSize=-1'
+urlroot = 'https://www.sephora.com/search?keyword=hair&sortBy=BEST_SELLING&pageSize=300'
 #todo: get page numbers from search results
 for p in np.arange(1,5):
     page_df = parse_sephora_results_page(urlroot,p)

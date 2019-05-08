@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 import smtplib
 from email.mime.text import MIMEText
 
+import urllib3
+urllib3.disable_warnings()
 
 def email_nancy(text_file):
     # Open a plain text file for reading.  For this example, assume that
@@ -19,7 +21,7 @@ def email_nancy(text_file):
     me = 'btquinn@gmail.com'
     you ='orders@briogeohair.com'
     #you = me
-    msg['Subject'] = 'SEPHORA OUT OF STOCK ALERT'
+    msg['Subject'] = 'SEPHORA USA OUT OF STOCK ALERT'
     msg['From'] = me
     msg['To'] = you
 
@@ -39,33 +41,41 @@ def email_nancy(text_file):
     server.quit()
 
 
-urlroot='http://sephora.com'
+urlroot='https://sephora.com'
 prod_urls=['/product/dont-despair-repair-deep-conditioning-mask-P388628',
 '/product/scalp-revival-charcoal-coconut-oil-micro-exfoliating-shampoo-P418507',
+'/product/hair-o-scopes-brightest-stars-bestsellers-P435405',
+'/product/superfoods-shampoo-conditioner-hair-pack-P431542',
 '/product/rosarco-milk-reparative-leave-in-conditioning-spray-P396733',
-'/product/scalp-revival-charcoal-tea-tree-scalp-treatment-P418506',
-'/product/rosarco-blow-dry-perfection-heat-protectant-creme-P411359',
-'/product/blossom-bloom-ginseng-biotin-volumizing-conditioner-P388625',
 '/product/blossom-bloom-ginseng-biotin-volumizing-shampoo-P402071',
+'/product/scalp-revival-charcoal-tea-tree-scalp-treatment-P418506',
+'/product/don-t-despair-repair-super-moisture-shampoo-P427718',
+'/product/rosarco-blow-dry-perfection-heat-protectant-creme-P411359',
+'/product/scalp-revival-charcoal-peppermint-oil-cooling-jelly-conditioner-P429961',
+'/product/blossom-bloom-ginseng-biotin-volumizing-conditioner-P388625',
+'/product/don-t-despair-repair-strength-moisture-leave-in-mask-P427526',
+'/product/rosarco-repair-conditioner-P402073',
+'/product/be-gentle-be-kind-kale-apple-replenishing-superfood-conditioner-P431544',
 '/product/scalp-revival-charcoal-biotin-dry-shampoo-P418505',
 '/product/be-gentle-be-kind-avocado-quinoa-co-wash-P388623',
-'/product/curl-charisma-rice-amino-avocado-leave-in-defining-creme-P388626',
-'/product/rosarco-repair-conditioner-P402073',
-'/product/be-gentle-be-kind-green-tea-clarifying-shampoo-P388624',
-'/product/curl-charisma-definition-on-the-go-travel-kit-P422368',
-'/product/rosarco-repair-shampoo-P402072',
-'/product/rosarco-repair-on-the-go-travel-kit-P422369',
-'/product/curl-charisma-rice-amino-quinoa-frizz-control-gel-P408411',
+'/product/be-gentle-be-kind-matcha-apple-replenishing-superfood-shampoo-P431543',
+'/product/scalp-revival-charcoal-coconut-oil-micro-exfoliating-shampoo-mini-P427715',
 '/product/curl-charisma-rice-amino-shampoo-P402074',
 '/product/curl-charisma-rice-amino-shea-curl-defining-conditioner-P388627',
-'/product/blossom-bloom-volumizing-on-the-go-travel-kit-P422370',
-'/product/rosarco-oil-P388629',
-'/product/don-t-despair-repair-gel-to-oil-overnight-repair-treatment-P408248',
+'/product/dont-despair-repair-deep-conditioning-hair-cap-system-P425409',
 '/product/blossom-bloom-ginseng-biotin-volumizing-spray-P396734',
-'/product/ultimate-hair-goals-best-briogeo-kit-P425022',
-'/product/rosarco-repair-winter-hair-renewal-P425021']
+'/product/rosarco-milk-tm-reparative-leave-in-conditioning-spray-mini-P426205',
+'/product/rosarco-repair-shampoo-P402072',
+'/product/curl-charisma-rice-amino-avocado-leave-in-defining-creme-P388626',
+'/product/rosarco-oil-P388629',
+'/product/curl-charisma-rice-amino-quinoa-frizz-control-gel-P408411',
+'/product/don-t-despair-repair-gel-to-oil-overnight-repair-treatment-P408248',
+'/product/curl-charisma-chia-flax-seed-coil-custard-P435402',
+'/product/rose-quartz-crystal-energy-comb-P433174',
+'/product/scalp-revival-scalp-massager-P429962',
+'/product/don-rsquo-t-despair-repair-tm-deep-conditioning-mask-mini-P426204']
 oos_flag=False
-email_filename = 'oos_email_' + str(datetime.now().date()) + '.txt'
+email_filename = 'oos_emails/sephora_usa_oos_email_' + str(datetime.now().date()) + '.txt'
 
 if os.path.isfile(email_filename):
     print 'Already run and sent today'
@@ -74,34 +84,44 @@ else:
 
     for p in prod_urls:
         print p
-        resp=requests.get(urlroot+p)
+        try:
+            resp=requests.get(urlroot+p,verify=False)
+        except (requests.HTTPError, requests.ConnectionError), error:
+            os.remove(email_filename)
+            raise
+            exit()
         soup = BeautifulSoup(resp.content,"lxml")
-        
-        for link in soup.find_all('script'):
-            if "Sephora.Util.InflatorComps.queue('RegularProductTop'," in link.get_text():
-                #print link.get_text()[55:-16]
-                json_string=link.get_text()[55:-16].replace('\\"','"').replace("\\'","'").replace('\\"','"')
-                #print json_string
-                jsondata = json.loads(json_string)
-                
-                if 'regularChildSkus' in jsondata['currentProduct'].keys():
+        data = soup.find('script',attrs={'id':"linkJSON"}).get_text()
+        output = json.loads(data)
+
+        for d in output:
+            if d['path']=='RegularProductTop':
+                prod=d['props']['currentProduct']
+                if 'regularChildSkus' in prod.keys():
                     field='regularChildSkus'
-                    for sku in jsondata['currentProduct'][field]:
-                        print sku['targetUrl'], sku['skuName'], sku['isOutOfStock']
+                    for sku in prod[field]:
+                        print sku['targetUrl'], sku['skuName'], ' OOS:', sku['isOutOfStock'], ' FewLeft:', sku['isOnlyFewLeft']
                         if sku['isOutOfStock']:
                             oos_flag=True
-                            text_file.write("\nOOS: {0} {1} {2}\n".format(urlroot+sku['targetUrl'], sku['skuName'], sku['isOutOfStock']))
+                            text_file.write("\nOOS: {0} {1}\n".format(urlroot+sku['targetUrl'], sku['skuName']))
+                        if sku['isOnlyFewLeft']:
+                            oos_flag=True
+                            text_file.write("\mFEW_LEFT: {0} {1}\n".format(urlroot+sku['targetUrl'], sku['skuName']))
                 else:
                     field='currentSku'
-                    sku=jsondata['currentProduct'][field]
-                    print sku['targetUrl'], sku['isOutOfStock']
+                    sku=prod[field]
+                    print sku['targetUrl'], ' OOS:', sku['isOutOfStock'], ' FewLeft:', sku['isOnlyFewLeft']
                     if sku['isOutOfStock']:
                         oos_flag=True
-                        text_file.write("\nOOS: {0} {1}\n".format(urlroot+sku['targetUrl'], sku['isOutOfStock']))
+                        text_file.write("\nOOS: {0}\n".format(urlroot+sku['targetUrl']))
+                    if sku['isOnlyFewLeft']:
+                        oos_flag=True
+                        text_file.write("\nFEW_LEFT: {0}\n".format(urlroot+sku['targetUrl']))
 
 
     text_file.close()                
     if oos_flag:
+        #print 'email'
         email_nancy(email_filename)
     else:
         os.remove(email_filename)

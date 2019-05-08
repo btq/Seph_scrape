@@ -26,9 +26,9 @@ retailer_urls_all={
   "Sephora USA": f"http://www.sephora.com"
   ,"Sephora CAN": f"http://www.sephora.com/ca/en"
   ,"Sephora France": f"http://www.sephora.fr"
-  ,"Sephora Middle East": f"http://www.sephora.ae"
+  ,"Sephora Middle East": f"https://www.sephora.ae"
   ,"Sephora SE Asia": f"http://www.sephora.sg"
-  ,"Sephora Thailand": f"http://www.sephora.co.th"
+  ,"Sephora Thailand": f"https://www.sephora.co.th"
   ,"Sephora AUS": f"http://www.sephora.com.au"
   ,"Revolve": f"http://www.revolve.com"
   ,"Riley Rose": f"https://www.rileyrose.com"
@@ -49,9 +49,9 @@ brand_pages_all={
   "Sephora USA": f"http://www.sephora.com/brand/briogeo/all"
   ,"Sephora CAN": f"http://www.sephora.com/ca/en/brand/briogeo/all"
   ,"Sephora France": f"http://www.sephora.fr/marques/de-a-a-z/briogeo-briog/"
-  ,"Sephora Middle East": f"http://www.sephora.ae/en/brands/briogeo"
+  ,"Sephora Middle East": f"https://www.sephora.ae/en/brands/briogeo"
   ,"Sephora SE Asia": f"http://www.sephora.sg/brands/briogeo?view=120"
-  ,"Sephora Thailand": f"http://www.sephora.co.th/brands/briogeo?view=120"
+  ,"Sephora Thailand": f"https://www.sephora.co.th/brands/briogeo?view=120"
   ,"Sephora AUS": f"https://www.sephora.com.au/brands/briogeo?view=60"
   ,"Revolve": f"http://www.revolve.com/briogeo/br/2e2c0b/"
   ,"Riley Rose": f"https://www.rileyrose.com/us/shop/catalog/category/rr/promo-branded-briogeo"
@@ -277,9 +277,10 @@ class BriogeoRetailerScraper(object):
     ### RILEY ROSE
     elif retailer == 'Riley Rose':
       rr_scripts=soup.find_all('script',attrs={'type':'text/javascript'})
-      rr_start_pos=rr_scripts[-1].text.find('var cData =')
-      rr_end_pos=rr_scripts[-1].text.find('"};',rr_start_pos)
-      rr_jsondata = json.loads(rr_scripts[-1].text[rr_start_pos+12:rr_end_pos+2])
+      ### TO DO: MAKE THIS A SEARCH THROUGH SCRIPTS FOR VAR CDATA
+      rr_start_pos=rr_scripts[-2].text.find('var cData =')
+      rr_end_pos=rr_scripts[-2].text.find('"};',rr_start_pos)
+      rr_jsondata = json.loads(rr_scripts[-2].text[rr_start_pos+12:rr_end_pos+2])
       prod_name_list=[]
       prod_url_list=[]
       prod_oos_list=[]

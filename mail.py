@@ -6,7 +6,7 @@ import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import config
+import emailconfig
 
 def send_email(sender, subject, message, to='', cc='', bcc='', files=None, high_importance=False,  server='localhost', verbose=True):
     
@@ -53,7 +53,7 @@ def send_email(sender, subject, message, to='', cc='', bcc='', files=None, high_
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.ehlo()
     s.starttls()
-    s.login(config.EMAIL_ADDRESS, config.EMAIL_PASSWORD)
+    s.login(emailconfig.EMAIL_ADDRESS, emailconfig.EMAIL_PASSWORD)
     s.sendmail(sender, receivers, msg.as_string())
     s.quit()
 

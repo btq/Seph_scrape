@@ -25,7 +25,7 @@ urllib3.disable_warnings()
 retailer_urls_all={
   "Sephora USA": f"http://www.sephora.com"
   ,"Sephora CAN": f"http://www.sephora.com/ca/en"
-  ,"Sephora France": f"http://www.sephora.fr"
+  ,"Sephora France": f"https://www.sephora.fr"
   ,"Sephora Middle East": f"https://www.sephora.ae"
   ,"Sephora SE Asia": f"http://www.sephora.sg"
   ,"Sephora Thailand": f"https://www.sephora.co.th"
@@ -48,7 +48,7 @@ df_root_urls=pd.DataFrame(list(zip(retailer_urls_all.keys(),retailer_urls_all.va
 brand_pages_all={
   "Sephora USA": f"http://www.sephora.com/brand/briogeo/all"
   ,"Sephora CAN": f"http://www.sephora.com/ca/en/brand/briogeo/all"
-  ,"Sephora France": f"http://www.sephora.fr/marques/de-a-a-z/briogeo-briog/"
+  ,"Sephora France": f"https://www.sephora.fr/marques/de-a-a-z/briogeo-briog/"
   ,"Sephora Middle East": f"https://www.sephora.ae/en/brands/briogeo"
   ,"Sephora SE Asia": f"http://www.sephora.sg/brands/briogeo?view=120"
   ,"Sephora Thailand": f"https://www.sephora.co.th/brands/briogeo?view=120"
@@ -217,9 +217,10 @@ class BriogeoRetailerScraper(object):
       prod_url_list=[]
       for p in prod_divs:
         p_json = json.loads(p['data-tcproduct'])
-        if p_json['product_brand']=='BRIOGEO':
-          prod_name_list.append(p_json['product_pid_name'])
-          prod_url_list.append(p_json['product_url_page'])
+        if p_json is not None:
+          if p_json['product_brand']=='BRIOGEO':
+            prod_name_list.append(p_json['product_pid_name'])
+            prod_url_list.append(p_json['product_url_page'])
       df=pd.DataFrame(list(zip(prod_name_list,prod_url_list)),columns=['displayName','targetUrl'])
       df['Retailer']=retailer
       df['OOS_FewLeft']='No'
@@ -261,9 +262,9 @@ class BriogeoRetailerScraper(object):
     
     ### NORDSTROM
     elif retailer == 'Nordstrom':
-      nd_start_pos=soup.text.find('{renderer({')
-      nd_end_pos=soup.text.find('});',nd_start_pos)
-      nd_jsondata = json.loads(soup.text[nd_start_pos+10:nd_end_pos+1])
+      nd_start_pos=soup.text.find('__INITIAL_CONFIG__ = {')
+      nd_end_pos=soup.text.find('Server":true}}',nd_start_pos)
+      nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+14])
       prod_name_list=[]
       prod_url_list=[]
       for num,p in enumerate(nd_jsondata['viewData']['productsById'].keys(),1):
@@ -558,9 +559,9 @@ class BriogeoRetailerScraper(object):
       print('{}: Loading product page: {}'.format(retailer,product_url))
       self.load_page_requests(product_url)
       time.sleep(1+np.abs(np.random.rand()))
-      nd_prod_start_pos=self.soup.text.find('{renderer({')
-      nd_prod_end_pos=self.soup.text.find('});',nd_prod_start_pos)
-      nd_prod_jsondata = json.loads(self.soup.text[nd_prod_start_pos+10:nd_prod_end_pos+1])
+      nd_prod_start_pos=self.soup.text.find('__INITIAL_CONFIG__ = {')
+      nd_prod_end_pos=self.soup.text.find('}}\n[]\n\n\n',nd_prod_start_pos)
+      nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+2])
       for k in nd_prod_jsondata['stylesById']['data']:
         prod_name=nd_prod_jsondata['stylesById']['data'][k]['productTitle']
         oos_value=nd_prod_jsondata['stylesById']['data'][k]['price']['style']['showSoldOutMessage']

@@ -263,8 +263,10 @@ class BriogeoRetailerScraper(object):
     ### NORDSTROM
     elif retailer == 'Nordstrom':
       nd_start_pos=soup.text.find('__INITIAL_CONFIG__ = {')
-      nd_end_pos=soup.text.find('Server":true}}',nd_start_pos)
-      nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+14])
+      #nd_end_pos=soup.text.find('Server":true}}',nd_start_pos)
+      #nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+14])
+      nd_end_pos=soup.text.find('webExtractor":{}}',nd_start_pos)
+      nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+17])
       prod_name_list=[]
       prod_url_list=[]
       for num,p in enumerate(nd_jsondata['viewData']['productsById'].keys(),1):
@@ -560,8 +562,10 @@ class BriogeoRetailerScraper(object):
       self.load_page_requests(product_url)
       time.sleep(1+np.abs(np.random.rand()))
       nd_prod_start_pos=self.soup.text.find('__INITIAL_CONFIG__ = {')
-      nd_prod_end_pos=self.soup.text.find('}}\n[]\n\n\n',nd_prod_start_pos)
-      nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+2])
+      #nd_prod_end_pos=self.soup.text.find('}}\n[]\n\n\n',nd_prod_start_pos)
+      #nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+2])
+      nd_prod_end_pos=self.soup.text.find('webExtractor":{}}',nd_prod_start_pos)
+      nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+17])
       for k in nd_prod_jsondata['stylesById']['data']:
         prod_name=nd_prod_jsondata['stylesById']['data'][k]['productTitle']
         oos_value=nd_prod_jsondata['stylesById']['data'][k]['price']['style']['showSoldOutMessage']

@@ -36,6 +36,7 @@ retailer_urls_all={
   ,"Nordstrom": f"http://shop.nordstrom.com"
   ,"Net-A-Porter": f"https://www.net-a-porter.com"
   ,"Beauty Bay": f"https://www.beautybay.com"
+  ,"Beauty Bay 2": f"https://www.beautybay.com"
   ,"Cult Beauty": f"https://www.cultbeauty.co.uk"
   ,"Anthropologie": f"https://www.anthropologie.com"
   ,"Free People": f"https://www.freepeople.com"
@@ -59,6 +60,7 @@ brand_pages_all={
   ,"Nordstrom": f"https://shop.nordstrom.com/c/briogeo?origin=productBrandLink"
   ,"Net-A-Porter": f"https://www.net-a-porter.com/us/en/Shop/Designers/Briogeo?pn=1&npp=60&image_view=product&dScroll=0"
   ,"Beauty Bay": f"https://www.beautybay.com/l/briogeo/"
+  ,"Beauty Bay 2": f"https://www.beautybay.com/l/briogeo/?f_pg=2"
   ,"Cult Beauty": f"https://www.cultbeauty.co.uk/briogeo"
   ,"Anthropologie": f"https://www.anthropologie.com/beauty-hair-care?brand=Briogeo"
   ,"Free People": f"https://www.freepeople.com/brands/briogeo/"
@@ -163,19 +165,23 @@ class BriogeoRetailerScraper(object):
     for r in self.brand_pages.keys():
       self.load_brand_page(r)
       self.parse_brand_page_soup(r)
+    if 'Beauty Bay 2' in self.df_prod_pages['Retailer'].unique().tolist():
+      self.df_prod_pages.loc[self.df_prod_pages['Retailer']=='Beauty Bay 2','Retailer']='Beauty Bay'
 
   def load_brand_page(self,retailer):
     brand_page=self.brand_pages[retailer]
     print('Loading {} brand page: {}'.format(retailer,brand_page))
-    if retailer in ['Sephora USA','Sephora CAN','Sephora France','Sephora Middle East','Nordstrom','Riley Rose','Revolve','Cult Beauty']:
+    if retailer in ['Sephora USA','Sephora CAN','Sephora France','Sephora Middle East','Nordstrom','Riley Rose','Revolve']:
       self.load_page_requests(brand_page)
     elif retailer in ['Sephora SE Asia','Sephora Thailand','Sephora AUS']:
       self.load_page_selenium(brand_page,By.ID,"product-index-content")
+    elif retailer == 'Cult Beauty':
+      self.load_page_selenium(brand_page,By.CLASS_NAME,"col mainContent",scroll=False,click=True,click_xpath="/html/body/div[1]/div[1]/div[4]/div[2]/div[2]/div[2]/div[3]/div[3]/button")
     elif retailer == 'Birchbox':
       self.load_page_selenium(brand_page,By.CLASS_NAME,"vertical__content___2lOQc",scroll=True,click=True,click_xpath="//button[1]")
     elif retailer == 'Net-A-Porter':
       self.load_page_selenium(brand_page,By.ID,'page-container',scroll=True)
-    elif retailer == 'Beauty Bay':
+    elif retailer in ['Beauty Bay','Beauty Bay 2']:
       self.load_page_selenium(brand_page,By.CLASS_NAME,"c-product qa-product",scroll=True)
     elif retailer == 'Anthropologie':
       self.load_page_selenium(brand_page,By.CLASS_NAME,"dom-category-browse",scroll=True)
@@ -352,7 +358,7 @@ class BriogeoRetailerScraper(object):
       df_brandpage_prods=df[['Retailer','displayName','targetUrl','OOS_FewLeft']]
     
     ### BEAUTY BAY
-    elif retailer == 'Beauty Bay':
+    elif retailer in ['Beauty Bay','Beauty Bay 2']:
       prod_list=soup.find_all('a',attrs={'class':'c-product qa-product'})
       prod_name_list=[]
       prod_url_list=[]

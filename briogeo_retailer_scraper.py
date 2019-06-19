@@ -33,7 +33,7 @@ retailer_urls_all={
   ,"Revolve": f"http://www.revolve.com"
   ,"Riley Rose": f"https://www.rileyrose.com"
   ,"Birchbox": f"http://www.birchbox.com"
-  ,"Nordstrom": f"http://shop.nordstrom.com"
+#  ,"Nordstrom": f"http://shop.nordstrom.com"
   ,"Net-A-Porter": f"https://www.net-a-porter.com"
   ,"Beauty Bay": f"https://www.beautybay.com"
   ,"Beauty Bay 2": f"https://www.beautybay.com"
@@ -57,7 +57,7 @@ brand_pages_all={
   ,"Revolve": f"http://www.revolve.com/briogeo/br/2e2c0b/"
   ,"Riley Rose": f"https://www.rileyrose.com/us/shop/catalog/category/rr/promo-branded-briogeo"
   ,"Birchbox": f"http://www.birchbox.com/brand/4614"
-  ,"Nordstrom": f"https://shop.nordstrom.com/c/briogeo?origin=productBrandLink"
+#  ,"Nordstrom": f"https://shop.nordstrom.com/c/briogeo?origin=productBrandLink"
   ,"Net-A-Porter": f"https://www.net-a-porter.com/us/en/Shop/Designers/Briogeo?pn=1&npp=60&image_view=product&dScroll=0"
   ,"Beauty Bay": f"https://www.beautybay.com/l/briogeo/"
   ,"Beauty Bay 2": f"https://www.beautybay.com/l/briogeo/?f_pg=2"
@@ -110,15 +110,15 @@ class BriogeoRetailerScraper(object):
     try:
       self.driver.get(url)
     except ConnectionResetError:
-      print('ConnectionResetError 111')
+      print('ConnectionResetError 113')
       time.sleep(3.5)
       self.driver.get(url)
     except BrokenPipeError:
-      print('BrokenPipeError 115')
+      print('BrokenPipeError 117')
       try:
         self.driver.close()
       except ConnectionResetError:
-        print('ConnectionResetError 119')
+        print('ConnectionResetError 121')
         self.driver.close()
       self.driver=None
       self.driver=webdriver.Firefox()
@@ -152,11 +152,15 @@ class BriogeoRetailerScraper(object):
     try:
       html = self.driver.execute_script("return document.body.outerHTML;")
     except RemoteDisconnected:
-      print('RemoteDisconnected 153')
+      print('RemoteDisconnected 155')
       time.sleep(2)
       html = self.driver.execute_script("return document.body.outerHTML;")
     except ConnectionResetError:
-      print('ConnectionResetError 156')
+      print('ConnectionResetError 159')
+      time.sleep(1)
+      html = self.driver.execute_script("return document.body.outerHTML;")
+    except BrokenPipeError:
+      print('BrokenPipeError 163')
       time.sleep(1)
       html = self.driver.execute_script("return document.body.outerHTML;")
     self.soup=BeautifulSoup(html,'lxml')
@@ -269,10 +273,12 @@ class BriogeoRetailerScraper(object):
     ### NORDSTROM
     elif retailer == 'Nordstrom':
       nd_start_pos=soup.text.find('__INITIAL_CONFIG__ = {')
-      #nd_end_pos=soup.text.find('Server":true}}',nd_start_pos)
-      #nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+14])
-      nd_end_pos=soup.text.find('webExtractor":{}}',nd_start_pos)
-      nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+17])
+      nd_end_pos=soup.text.find('Server":true}}',nd_start_pos)
+      if nd_end_pos!=-1:
+        nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+14])
+      else:
+        nd_end_pos=soup.text.find('webExtractor":{}}',nd_start_pos)
+        nd_jsondata=json.loads(soup.text[nd_start_pos+21:nd_end_pos+17])
       prod_name_list=[]
       prod_url_list=[]
       for num,p in enumerate(nd_jsondata['viewData']['productsById'].keys(),1):
@@ -568,10 +574,15 @@ class BriogeoRetailerScraper(object):
       self.load_page_requests(product_url)
       time.sleep(1+np.abs(np.random.rand()))
       nd_prod_start_pos=self.soup.text.find('__INITIAL_CONFIG__ = {')
-      #nd_prod_end_pos=self.soup.text.find('}}\n[]\n\n\n',nd_prod_start_pos)
-      #nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+2])
-      nd_prod_end_pos=self.soup.text.find('webExtractor":{}}',nd_prod_start_pos)
-      nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+17])
+      if self.soup.text.find('}}\n[]\n\n\n',nd_prod_start_pos)!=-1:
+        nd_prod_end_pos=self.soup.text.find('}}\n[]\n\n\n',nd_prod_start_pos)
+        nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+2])
+      elif self.soup.text.find('webExtractor":{}}',nd_prod_start_pos)!=-1:
+        nd_prod_end_pos=self.soup.text.find('webExtractor":{}}',nd_prod_start_pos)
+        nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+17])
+      elif self.soup.text.find('}}\n\n',nd_prod_start_pos)!=-1:
+        nd_prod_end_pos=self.soup.text.find('}}\n\n',nd_prod_start_pos)
+        nd_prod_jsondata=json.loads(self.soup.text[nd_prod_start_pos+21:nd_prod_end_pos+2])
       for k in nd_prod_jsondata['stylesById']['data']:
         prod_name=nd_prod_jsondata['stylesById']['data'][k]['productTitle']
         oos_value=nd_prod_jsondata['stylesById']['data'][k]['price']['style']['showSoldOutMessage']
@@ -735,10 +746,10 @@ class BriogeoRetailerScraper(object):
       try: 
         self.driver.close()
       except ConnectionResetError:
-        print('ConnectionResetError 726')
+        print('ConnectionResetError 749')
         self.driver.close()
       except BrokenPipeError:
-        print('BrokenPipeError 729')
+        print('BrokenPipeError 752')
         self.driver.close()
 
 

@@ -36,7 +36,7 @@ retailer_urls_all={
 #  ,"Nordstrom": f"http://shop.nordstrom.com"
   ,"Net-A-Porter": f"https://www.net-a-porter.com"
   ,"Beauty Bay": f"https://www.beautybay.com"
-  ,"Beauty Bay 2": f"https://www.beautybay.com"
+#  ,"Beauty Bay 2": f"https://www.beautybay.com"
   ,"Cult Beauty": f"https://www.cultbeauty.co.uk"
   ,"Anthropologie": f"https://www.anthropologie.com"
   ,"Free People": f"https://www.freepeople.com"
@@ -60,7 +60,7 @@ brand_pages_all={
 #  ,"Nordstrom": f"https://shop.nordstrom.com/c/briogeo?origin=productBrandLink"
   ,"Net-A-Porter": f"https://www.net-a-porter.com/us/en/Shop/Designers/Briogeo?pn=1&npp=60&image_view=product&dScroll=0"
   ,"Beauty Bay": f"https://www.beautybay.com/l/briogeo/"
-  ,"Beauty Bay 2": f"https://www.beautybay.com/l/briogeo/?f_pg=2"
+#  ,"Beauty Bay 2": f"https://www.beautybay.com/l/briogeo/?f_pg=2"
   ,"Cult Beauty": f"https://www.cultbeauty.co.uk/briogeo"
   ,"Anthropologie": f"https://www.anthropologie.com/beauty-hair-care?brand=Briogeo"
   ,"Free People": f"https://www.freepeople.com/brands/briogeo/"
@@ -113,8 +113,8 @@ class BriogeoRetailerScraper(object):
       print('ConnectionResetError 113')
       time.sleep(3.5)
       self.driver.get(url)
-    except BrokenPipeError:
-      print('BrokenPipeError 117')
+    except (BrokenPipeError, OSError):
+      print('BrokenPipeError or OSError 117')
       try:
         self.driver.close()
       except ConnectionResetError:
@@ -180,7 +180,7 @@ class BriogeoRetailerScraper(object):
     elif retailer in ['Sephora SE Asia','Sephora Thailand','Sephora AUS']:
       self.load_page_selenium(brand_page,By.ID,"product-index-content")
     elif retailer == 'Cult Beauty':
-      self.load_page_selenium(brand_page,By.CLASS_NAME,"col mainContent",scroll=False,click=True,click_xpath="/html/body/div[1]/div[1]/div[4]/div[2]/div[2]/div[2]/div[3]/div[3]/button")
+      self.load_page_selenium(brand_page,By.CLASS_NAME,"col mainContent",scroll=False,click=True,click_xpath="/html/body/div[1]/div[1]/div[7]/div[2]/div[2]/div[2]/div[3]/div[3]/button")
     elif retailer == 'Birchbox':
       self.load_page_selenium(brand_page,By.CLASS_NAME,"vertical__content___2lOQc",scroll=True,click=True,click_xpath="//button[1]")
     elif retailer == 'Net-A-Porter':
@@ -365,15 +365,27 @@ class BriogeoRetailerScraper(object):
     
     ### BEAUTY BAY
     elif retailer in ['Beauty Bay','Beauty Bay 2']:
-      prod_list=soup.find_all('a',attrs={'class':'c-product qa-product'})
+      list_grid=soup.find_all('div',attrs={'class':'lister-grid'})
+      prod_list=list_grid[0].find_all('a')
+      #prod_list=soup.find_all('a',attrs={'class':'c-product qa-product'})
       prod_name_list=[]
       prod_url_list=[]
+      prod_oos_list=[]
       for p in prod_list:
-        prod_name_list.append(p.find('img')['alt'])
+        #prod_name_list.append(p.find('img')['alt'])
+        #prod_url_list.append(retailer_urls_all[retailer]+p['href'])
         prod_url_list.append(retailer_urls_all[retailer]+p['href'])
-      df=pd.DataFrame(list(zip(prod_name_list,prod_url_list)),columns=['displayName','targetUrl'])
+        img_list=p.find_all('img')
+        prod_name_list.append(img_list[0]['alt'])
+        if p.find('div',attrs={'class':'lister-tile out-of-stock'}):
+          oos_value='Yes'
+        else:
+          oos_value='No'
+        prod_oos_list.append(oos_value)
+      #df=pd.DataFrame(list(zip(prod_name_list,prod_url_list)),columns=['displayName','targetUrl'])
+      df=pd.DataFrame(list(zip(prod_name_list,prod_url_list,prod_oos_list)),columns=['displayName','targetUrl','OOS_FewLeft'])
       df['Retailer']=retailer
-      df['OOS_FewLeft']='No'
+      #df['OOS_FewLeft']='No'
       df_brandpage_prods=df[['Retailer','displayName','targetUrl','OOS_FewLeft']]
     
     ### CULT BEAUTY
@@ -620,13 +632,14 @@ class BriogeoRetailerScraper(object):
         oos_value='No'
     ### BEAUTY BAY
     elif retailer == 'Beauty Bay':
-      print('{}: Loading product page: {}'.format(retailer,product_url))
-      self.load_page_selenium(product_url,By.CLASS_NAME,"product-description",scroll=False,click=False)
-      time.sleep(12)
-      if self.soup.find('button',attrs={'class':"quantity-selector__btn btn action btn-add-bag js-track-add "}):
-        oos_value='No'
-      else:
-        oos_value='OOS'
+      print('{}: Not loading any pages. OOS information from brand page.'.format(retailer))
+      #print('{}: Loading product page: {}'.format(retailer,product_url))
+      #self.load_page_selenium(product_url,By.CLASS_NAME,"product-description",scroll=False,click=False)
+      #time.sleep(12)
+      #if self.soup.find('button',attrs={'class':"quantity-selector__btn btn action btn-add-bag js-track-add "}):
+      #  oos_value='No'
+      #else:
+      #  oos_value='OOS'
     ### CULT BEAUTY
     elif retailer == 'Cult Beauty':
       print('{}: Loading product page: {}'.format(retailer,product_url))

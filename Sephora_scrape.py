@@ -3,6 +3,7 @@
 
 # In[1]:
 
+
 import time
 import urllib2
 import requests
@@ -16,11 +17,12 @@ from IPython.display import IFrame
 import matplotlib.font_manager as fm
 
 plt.style.use('ggplot')
-get_ipython().magic(u'matplotlib inline')
+get_ipython().run_line_magic('matplotlib', 'inline')
 pd.options.display.max_columns=25
 
 
 # In[2]:
+
 
 import json
 import requests
@@ -67,11 +69,13 @@ seph_df[seph_df['brand_name']=='Briogeo'].to_excel(filename_out2,index=False)
 
 # In[8]:
 
+
 print response.content
 soup = BeautifulSoup(response.content,"lxml")
 
 
 # In[34]:
+
 
 data = soup.find('script',attrs={'id':"searchResult"}).get_text()
 output = json.loads(data)
@@ -83,6 +87,7 @@ df=pd.DataFrame(output['products']['products'])
 
 # In[37]:
 
+
 df['rank']=df.index+1
 df['date_scraped']=datetime.now()
 df = df[['date_scraped','rank','brand_name','display_name','rating','id','product_url']]
@@ -91,15 +96,18 @@ df.head()
 
 # In[39]:
 
+
 df['brand_name'].unique()
 
 
 # In[40]:
 
+
 df[df['brand_name']=='Briogeo']
 
 
 # In[42]:
+
 
 print df.shape
 df
@@ -107,10 +115,12 @@ df
 
 # In[24]:
 
+
 output['products'].viewkeys()
 
 
 # In[6]:
+
 
 import json, urllib
 data = urllib.urlopen(url).read()
@@ -119,6 +129,7 @@ print (output)
 
 
 # In[3]:
+
 
 urlroot = 'http://www.sephora.com/search/search.jsp?keyword=hair&mode=all&node=1050092&sortBy=P_BEST_SELLING%3A1%3A%3AP_RATING%3A1%3A%3AP_PROD_NAME%3A0%3A%3AP_DEFAULT_SKU%3A1&pageSize=-1'
 pnum=1
@@ -129,10 +140,12 @@ print 'Parsing '+url
 
 # In[7]:
 
+
 resp2 = requests.get(urlroot)
 
 
 # In[ ]:
+
 
 import mechanize
 br = mechanize.Browser()
@@ -151,10 +164,12 @@ data = br.open(resp2.url).get_data()
 
 # In[ ]:
 
+
 print data
 
 
 # In[10]:
+
 
 soup = BeautifulSoup(data,"lxml")
 #soup.
@@ -236,10 +251,12 @@ print productlist
 
 # In[3]:
 
+
 response.
 
 
 # In[ ]:
+
 
 def check_party_date(pdat,datecheck):
     #Extract the span that contains the date
@@ -281,11 +298,13 @@ print parties[:15]
 
 # In[4]:
 
+
 raw_page = urllib2.urlopen(url).read()
 print raw_page
 
 
 # In[27]:
+
 
 parties = partylist[0].find_all('a',attrs={'class': 'SkuItem--135'})
 for p in parties:
@@ -294,15 +313,18 @@ for p in parties:
 
 # In[26]:
 
+
 print len(partylist)
 
 
 # In[49]:
 
+
 print datetime.now().date()
 
 
 # In[5]:
+
 
 filelist=['files/sephora_hair_search_2017-01-18.xlsx',
 'files/sephora_hair_search_2017-01-19.xlsx',
@@ -324,10 +346,12 @@ print all_df.shape
 
 # In[6]:
 
+
 all_df.to_excel('files/sephora_hair_concat.xlsx',index=False)
 
 
 # In[2]:
+
 
 import json
 import requests
@@ -350,26 +374,31 @@ jsondata = json.loads(data)
 
 # In[14]:
 
+
 with open('jsondata.txt', 'w') as outfile:
     json.dump(data, outfile)
 
 
 # In[7]:
 
+
 print jsondata.keys()
 
 
 # In[6]:
+
 
 print jsondata['products'].keys()
 
 
 # In[8]:
 
+
 print jsondata['meta'].keys()
 
 
 # In[ ]:
+
 
 
 df=pd.DataFrame(jsondata['products']['products'])
@@ -399,6 +428,7 @@ seph_df[seph_df['brand_name']=='Briogeo'].to_excel(filename_out2,index=False)
 
 # In[2]:
 
+
 urlroot = 'http://www.sephora.com'
 page1='/rosarco-oil-P388629'
 page2='/blossom-bloom-ginseng-biotin-volumizing-shampoo-P402071'
@@ -410,20 +440,24 @@ soup = BeautifulSoup(response.content,"lxml")
 
 # In[4]:
 
+
 print soup.find('b',attrs={'class','u-textWarning'})
 
 
 # In[9]:
+
 
 print soup.find('script')
 
 
 # In[10]:
 
+
 soup.find_all('script')
 
 
 # In[5]:
+
 
 urlroot = 'http://www.sephora.com'
 page1='/rosarco-oil-P388629'
@@ -436,10 +470,12 @@ soup2 = BeautifulSoup(response.content,"lxml")
 
 # In[6]:
 
+
 print soup.find('b',attrs={'class','u-textWarning'})
 
 
 # In[ ]:
+
 
 data = soup.find('script',attrs={'id':"searchResult"}).get_text()
 jsondata = json.loads(data)
@@ -447,6 +483,7 @@ df=pd.DataFrame(jsondata['products']['products'])
 
 
 # In[3]:
+
 
 oos_item='https://www.sephora.com/product/dont-despair-repair-deep-conditioning-mask-P388628?skuId=1784636'
 is_item='https://www.sephora.com/product/dont-despair-repair-deep-conditioning-mask-P388628?skuId=1823418'
@@ -456,12 +493,14 @@ resp_is=requests.get(is_item)
 
 # In[13]:
 
+
 import re
 print re.search('Stock',resp_oos.content)
 print re.search('Stock',resp_is.content)
 
 
 # In[15]:
+
 
 with open("oos.txt", "w") as text_file:
     text_file.write("{}".format(resp_oos.content))
@@ -472,17 +511,41 @@ with open("is.txt", "w") as text_file:
 
 # In[16]:
 
+
 soup = BeautifulSoup(resp_oos.content,"lxml")
 data = soup.find_all('button')
     
 
 
+# In[102]:
+
+
+oos_item='https://www.sephora.com/product/dont-despair-repair-deep-conditioning-mask-P388628'
+resp_oos=requests.get(oos_item)
+soup = BeautifulSoup(resp_oos.content,"lxml")
+data = soup.find('script',attrs={'id':"linkJSON"}).get_text()
+output = json.loads(data)
+[print o.keys() for o in output]
+
+
+# In[129]:
+
+
+print [(o[0],o[1]['path']) for o in enumerate(output)]
+#print output[7].keys()
+#print output[7]['path']
+print output[7].keys()
+print output[7]['props']['currentProduct']['regularChildSkus']
+
+
 # In[17]:
+
 
 print soup.find('script',attrs={'id':"searchResult"}).get_text()
 
 
 # In[34]:
+
 
 for link in soup.find_all('script'):
     if "Sephora.Util.InflatorComps.queue('RegularProductTop'," in link.get_text():
@@ -496,15 +559,18 @@ for link in soup.find_all('script'):
 
 # In[33]:
 
+
 print json_string[15690:15700]
 
 
 # In[48]:
 
+
 print jsondata.keys()
 
 
 # In[38]:
+
 
 print len(jsondata['currentProduct'])
 print jsondata['currentProduct'].keys()
@@ -512,25 +578,30 @@ print jsondata['currentProduct'].keys()
 
 # In[49]:
 
+
 print jsondata['currentProduct']['imageAltText']
 
 
 # In[42]:
+
 
 print len(jsondata['currentProduct']['regularChildSkus'])
 
 
 # In[46]:
 
+
 print jsondata['currentProduct']['regularChildSkus'][0]
 
 
 # In[45]:
 
+
 print jsondata['currentProduct']['regularChildSkus'][0]['isOutOfStock']
 
 
 # In[47]:
+
 
 for sku in jsondata['currentProduct']['regularChildSkus']:
     print sku['targetUrl'], sku['skuName'], sku['isOutOfStock']
@@ -540,6 +611,7 @@ for sku in jsondata['currentProduct']['regularChildSkus']:
 
 
 # In[80]:
+
 
 urlroot='http://sephora.com'
 prod_urls=['/product/dont-despair-repair-deep-conditioning-mask-P388628',
@@ -607,6 +679,7 @@ if ~os.path.isfile(email_filename):
 
 # In[78]:
 
+
 #print jsondata['currentProduct'][field]
 #print jsondata['currentProduct'].keys()
 #print jsondata['currentProduct']['currentSku']
@@ -616,6 +689,7 @@ with open("curltravel.txt", "w") as text_file:
 
 # In[58]:
 
+
 print "OOS: {0} {1} {2}".format(urlroot+sku['targetUrl'], sku['skuName'], sku['isOutOfStock'])
 text_file = open(email_filename, "w")
 text_file.write("\nOOS: {0} {1} {2}\n".format(urlroot+sku['targetUrl'], sku['skuName'], sku['isOutOfStock']))
@@ -623,6 +697,7 @@ text_file.close()
 
 
 # In[90]:
+
 
 import smtplib
 
@@ -658,10 +733,12 @@ def email_nancy(text_file):
 
 # In[91]:
 
+
 email_nancy(email_filename)
 
 
 # In[82]:
+
 
 import smtplib
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -677,6 +754,7 @@ server.sendmail("btquinn@gmail.com", "nancy@briogeohair.com", msg)
 
 # In[83]:
 
+
 server.ehlo()
 server.starttls()
 server.ehlo()
@@ -684,10 +762,12 @@ server.ehlo()
 
 # In[85]:
 
-server.login("btquinn", "ilC.20090521")
+
+server.login("btquinn", "")
 
 
 # In[86]:
+
 
 msg = '''
 Hello!''' # The /n separates the message from the headers
@@ -696,12 +776,8 @@ server.sendmail("btquinn@gmail.com", "nancy@briogeohair.com", msg)
 
 # In[99]:
 
+
 import os
 if not os.path.isfile(email_filename):
     print 'no file'
-
-
-# In[ ]:
-
-
 
